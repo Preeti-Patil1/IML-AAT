@@ -1,0 +1,63 @@
+import json
+import sys
+from sklearn.svm import LinearSVC
+from sklearn.feature_extraction.text import HashingVectorizer
+
+# Function to read training data
+def read_training_data(file_path):
+    _t = []
+    tl = []
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            N = int(f.readline().strip())
+            for i in range(N):
+                try:
+                    h = json.loads(f.readline().strip())
+                    _t.append(h['question'] + "\r\n" + h['excerpt'])
+                    tl.append(h['topic'])
+                except json.JSONDecodeError:
+                    print(f"Error decoding JSON on line {i+1}")
+    except FileNotFoundError:
+        print("Training file not found.")
+        sys.exit()
+
+    return _t, tl
+
+# Function to read test data from stdin
+def read_test_data():
+    _te = []
+    try:
+        N_test = int(input().strip())
+        for i in range(N_test):
+            try:
+                h = json.loads(input().strip())
+                _te.append(h['question'] + "\r\n" + h['excerpt'])
+            except json.JSONDecodeError:
+                print(f"Error decoding JSON on line {i+1}")
+    except ValueError:
+        print("Invalid number of test cases.")
+        sys.exit()
+
+    return _te
+
+if __name__ == "__main__":
+    transformer = HashingVectorizer(stop_words='english')
+
+    # Load and process training data
+    _t, tl = read_training_data('training.json')
+    train = transformer.fit_transform(_t)
+
+    # Train the LinearSVC model
+    svm = LinearSVC()
+    svm.fit(train, tl)
+
+    # Load and process test data
+    _te = read_test_data()
+    test = transformer.transform(_te)
+
+    # Predict topics for test data
+    test_l = svm.predict(test)
+
+    # Output predictions
+    for e in test_l:
+        print(e)
