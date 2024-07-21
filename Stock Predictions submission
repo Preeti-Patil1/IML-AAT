@@ -1,0 +1,38 @@
+def printTransactions(m, k, d, name, owned, prices):
+    transactions = []
+
+    for i in range(k):
+        stock_name = name[i]
+        stock_owned = owned[i]
+        stock_prices = prices[i]
+
+        # Calculate price trends
+        trend = stock_prices[4] - stock_prices[3]  # Simple trend indicator
+
+        # Sell decision: If the price is decreasing and we own stocks
+        if trend < 0 and stock_owned > 0:
+            transactions.append((stock_name, "SELL", stock_owned))
+            m += stock_owned * stock_prices[4]  # Add money from selling stocks
+
+        # Buy decision: If the price is increasing and we have money
+        elif trend > 0:
+            # Determine max stocks we can buy
+            max_stocks_to_buy = int(m // stock_prices[4])
+            if max_stocks_to_buy > 0:
+                transactions.append((stock_name, "BUY", max_stocks_to_buy))
+                m -= max_stocks_to_buy * stock_prices[4]  # Subtract money for buying stocks
+
+    # Output the transactions
+    print(len(transactions))
+    for transaction in transactions:
+        print(f"{transaction[0]} {transaction[1]} {transaction[2]}")
+
+# Example usage
+m = 90
+k = 2
+d = 400
+name = ["iStreet", "HR"]
+owned = [10, 0]
+prices = [[4.54, 5.53, 6.56, 5.54, 7.60], [30.54, 27.53, 24.42, 20.11, 17.50]]
+
+printTransactions(m, k, d, name, owned, prices)
