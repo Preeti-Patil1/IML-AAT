@@ -1,29 +1,27 @@
 from fractions import Fraction
 
-def calculate_probability(W_A, B_A, W_B, B_B):
-    # Total balls in bag A and bag B
-    T_A = W_A + B_A
-    T_B = W_B + B_B
+def probability_black_ball(W_A, B_A, W_B, B_B):
+    # Probabilities of drawing each color from Bag A
+    p_white_from_A = Fraction(W_A, W_A + B_A)
+    p_black_from_A = Fraction(B_A, W_A + B_A)
     
-    P_white_from_A = Fraction(W_A, T_A)
-    P_black_from_B_after_white = Fraction(B_B, T_B + 1)
+    # Probability of drawing a black ball from Bag B given a white ball was transferred
+    p_black_given_white_from_A = Fraction(B_B, W_B + 1 + B_B)
     
-    P_black_from_A = Fraction(B_A, T_A)
-    P_black_from_B_after_black = Fraction(B_B + 1, T_B + 1)
+    # Probability of drawing a black ball from Bag B given a black ball was transferred
+    p_black_given_black_from_A = Fraction(B_B + 1, W_B + 1 + B_B)
+    
+    # Total probability of drawing a black ball from Bag B
+    p_black_from_B = (p_white_from_A * p_black_given_white_from_A) + (p_black_from_A * p_black_given_black_from_A)
+    
+    return p_black_from_B
 
-    P_black_from_B = (P_white_from_A * P_black_from_B_after_white) + (P_black_from_A * P_black_from_B_after_black)
-    return P_black_from_B
+# Example values
+W_A = 3
+B_A = 4
+W_B = 1
+B_B = 3
 
-
-test_cases = [
-    (2, 3, 4, 5),    
-    (1, 1, 1, 1),     
-    (3, 2, 1, 4),     
-    (4, 6, 2, 3),     
-    (0, 5, 0, 5),    
-    (5, 0, 5, 0),     
-]
-
-for i, (W_A, B_A, W_B, B_B) in enumerate(test_cases):
-    result = calculate_probability(W_A, B_A, W_B, B_B)
-    print(f"Test Case {i+1}: W_A={W_A}, B_A={B_A}, W_B={W_B}, B_B={B_B} => Probability: {result}")
+# Calculate the probability
+result = probability_black_ball(W_A, B_A, W_B, B_B)
+print(result)  # Output the result as a fraction
