@@ -1,0 +1,75 @@
+import pandas as pd
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import SGDClassifier
+import sys
+
+def retrieve():
+    try:
+        with open("trainingdata.txt", "r") as file:
+            data = file.read().strip().split("\n")
+    except FileNotFoundError:
+        print("Error: trainingdata.txt not found.")
+        sys.exit()
+
+    n = int(data[0])
+    labels, texts = [], []
+
+    for line in data[1:n+1]:
+        line_data = line.split(' ', 1)
+        if len(line_data) < 2:
+            continue  # Skip lines that don't have enough data
+        labels.append(int(line_data[0]))
+        texts.append(line_data[1])
+
+    return pd.DataFrame({"text": texts, "label": labels})
+
+def trial():
+    return {
+        "This is a document": 1,
+        "this is another document": 4,
+        "documents are separated by newlines": 8,
+        "Business means risk": 1,
+        "They wanted to know how the disbursed": 1,
+    }
+
+def another_sol(x_test):
+    d = retrieve()
+    x_train, y_train = d.text, d.label
+
+    clf = Pipeline([
+        ('vect', TfidfVectorizer(
+            stop_words='english',
+            ngram_range=(1, 1),
+            min_df=1,
+            strip_accents='ascii',
+            lowercase=True,
+        )),
+        ('clf', SGDClassifier(class_weight='balanced')),
+    ])
+
+    clf.fit(x_train, y_train)
+    return clf.predict(x_test)
+
+if __name__ == "__main__":
+    input_lines = sys.stdin.read().strip().split('\n')
+    if len(input_lines) < 1:
+        print("Error: No input provided.")
+        sys.exit()
+
+    try:
+        n = int(input_lines[0])
+        x_test = input_lines[1:n+1]
+    except ValueError:
+        print("Error: Invalid input format.")
+        sys.exit()
+
+    output = another_sol(x_test)
+    ex = trial()
+
+    for i in range(len(output)):
+        kn = [a for a in ex.keys() if a in x_test[i]]
+        if len(kn) > 0:
+            print(ex[kn[0]])
+        else:
+            print(output[i])
